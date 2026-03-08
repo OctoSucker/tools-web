@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"strconv"
@@ -213,7 +214,7 @@ func RegisterWebSkill(registry *skill.ToolRegistry, agent interface{}) error {
 	return nil
 }
 
-func handleBrowserNavigate(params map[string]interface{}) (interface{}, error) {
+func handleBrowserNavigate(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	urlStr, ok := params["url"].(string)
 	if !ok || urlStr == "" {
 		return nil, fmt.Errorf("url is required")
@@ -225,7 +226,7 @@ func handleBrowserNavigate(params map[string]interface{}) (interface{}, error) {
 	return domToMap(dom), nil
 }
 
-func handleBrowserClick(params map[string]interface{}) (interface{}, error) {
+func handleBrowserClick(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	ref, ok := params["ref"].(string)
 	if !ok || ref == "" {
 		return nil, fmt.Errorf("ref is required")
@@ -237,7 +238,7 @@ func handleBrowserClick(params map[string]interface{}) (interface{}, error) {
 	return domToMap(dom), nil
 }
 
-func handleBrowserType(params map[string]interface{}) (interface{}, error) {
+func handleBrowserType(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	ref, ok := params["ref"].(string)
 	if !ok || ref == "" {
 		return nil, fmt.Errorf("ref is required")
@@ -250,7 +251,7 @@ func handleBrowserType(params map[string]interface{}) (interface{}, error) {
 	return domToMap(dom), nil
 }
 
-func handleBrowserScroll(params map[string]interface{}) (interface{}, error) {
+func handleBrowserScroll(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	dir, _ := params["direction"].(string)
 	if dir == "" {
 		dir = "down"
@@ -262,7 +263,7 @@ func handleBrowserScroll(params map[string]interface{}) (interface{}, error) {
 	return domToMap(dom), nil
 }
 
-func handleBrowserExtract(params map[string]interface{}) (interface{}, error) {
+func handleBrowserExtract(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	maxChars := globalSkillWeb.getFetchMaxChars()
 	if v, ok := params["max_chars"].(float64); ok && v > 0 {
 		maxChars = int(v)
@@ -277,7 +278,7 @@ func handleBrowserExtract(params map[string]interface{}) (interface{}, error) {
 	return map[string]interface{}{"success": true, "content": text, "length": len(text)}, nil
 }
 
-func handleBrowserHover(params map[string]interface{}) (interface{}, error) {
+func handleBrowserHover(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	ref, ok := params["ref"].(string)
 	if !ok || ref == "" {
 		return nil, fmt.Errorf("ref is required")
@@ -289,7 +290,7 @@ func handleBrowserHover(params map[string]interface{}) (interface{}, error) {
 	return domToMap(dom), nil
 }
 
-func handleBrowserSelectOption(params map[string]interface{}) (interface{}, error) {
+func handleBrowserSelectOption(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	ref, ok := params["ref"].(string)
 	if !ok || ref == "" {
 		return nil, fmt.Errorf("ref is required")
@@ -302,7 +303,7 @@ func handleBrowserSelectOption(params map[string]interface{}) (interface{}, erro
 	return domToMap(dom), nil
 }
 
-func handleBrowserScreenshot(params map[string]interface{}) (interface{}, error) {
+func handleBrowserScreenshot(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	fullPage := false
 	if v, ok := params["full_page"].(bool); ok {
 		fullPage = v
@@ -318,7 +319,7 @@ func handleBrowserScreenshot(params map[string]interface{}) (interface{}, error)
 	}, nil
 }
 
-func handleBrowserGoBack(params map[string]interface{}) (interface{}, error) {
+func handleBrowserGoBack(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	dom, err := GoBack()
 	if err != nil {
 		return nil, err
@@ -326,7 +327,7 @@ func handleBrowserGoBack(params map[string]interface{}) (interface{}, error) {
 	return domToMap(dom), nil
 }
 
-func handleBrowserGoForward(params map[string]interface{}) (interface{}, error) {
+func handleBrowserGoForward(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	dom, err := GoForward()
 	if err != nil {
 		return nil, err
@@ -334,7 +335,7 @@ func handleBrowserGoForward(params map[string]interface{}) (interface{}, error) 
 	return domToMap(dom), nil
 }
 
-func handleBrowserCheck(params map[string]interface{}) (interface{}, error) {
+func handleBrowserCheck(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	ref, ok := params["ref"].(string)
 	if !ok || ref == "" {
 		return nil, fmt.Errorf("ref is required")
@@ -350,7 +351,7 @@ func handleBrowserCheck(params map[string]interface{}) (interface{}, error) {
 	return domToMap(dom), nil
 }
 
-func handleBrowserWait(params map[string]interface{}) (interface{}, error) {
+func handleBrowserWait(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	selector, _ := params["selector"].(string)
 	timeoutSeconds := 2
 	if v, ok := params["timeout_seconds"].(float64); ok && v > 0 {
@@ -387,7 +388,7 @@ func domToMap(dom *CompressedDOM) map[string]interface{} {
 	}
 }
 
-func handleWebFetch(params map[string]interface{}) (interface{}, error) {
+func handleWebFetch(ctx context.Context, params map[string]interface{}) (interface{}, error) {
 	urlStr, ok := params["url"].(string)
 	if !ok || urlStr == "" {
 		return nil, fmt.Errorf("url is required")
