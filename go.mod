@@ -8,5 +8,3 @@ require (
 	github.com/OctoSucker/octosucker-tools v0.0.0
 	golang.org/x/net v0.34.0
 )
-
-replace github.com/OctoSucker/octosucker-tools => ../octosucker-tools
