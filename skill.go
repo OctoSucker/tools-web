@@ -18,7 +18,7 @@ type SkillWeb struct {
 	fetchMaxChars int
 }
 
-func (s *SkillWeb) Init(config map[string]interface{}) error {
+func (s *SkillWeb) Init(config map[string]interface{}, submitTask func(string) error) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.fetchMaxChars = 50000
@@ -83,8 +83,8 @@ func (s *SkillWeb) getSearchConfig() BraveSearchConfig {
 	return s.BraveSearchConfig
 }
 
-func RegisterWebSkill(registry *tools.ToolRegistry, agent interface{}) error {
-	registry.Register(&tools.Tool{
+func (s *SkillWeb) Register(registry *tools.ToolRegistry, agent interface{}, providerName string) error {
+	registry.RegisterTool(providerName, &tools.Tool{
 		Name:        "web_fetch",
 		Description: "通过 HTTP 拉取 URL 的纯文本（不启动浏览器，仅适合静态页）。用户若要求「用 Google 搜索并给我结果」时必须用 browser_navigate，禁止用 web_fetch 拉 Google 或新闻站。",
 		Parameters: map[string]interface{}{
@@ -98,7 +98,7 @@ func RegisterWebSkill(registry *tools.ToolRegistry, agent interface{}) error {
 		Handler: handleWebFetch,
 	})
 
-	registry.Register(&tools.Tool{
+	registry.RegisterTool(providerName, &tools.Tool{
 		Name:        "web_read",
 		Description: "使用 Jina Reader（https://r.jina.ai）将任意 URL 转换为适合 LLM 的 Markdown 文本，仅用于阅读网页内容，不做交互。",
 		Parameters: map[string]interface{}{
@@ -118,7 +118,7 @@ func RegisterWebSkill(registry *tools.ToolRegistry, agent interface{}) error {
 		Handler: handleWebRead,
 	})
 
-	registry.Register(&tools.Tool{
+	registry.RegisterTool(providerName, &tools.Tool{
 		Name:        "web_search",
 		Description: "使用 Brave Search API 搜索网络，返回标题、链接与摘要。适用于「查新闻、找资料」等场景，不会打开浏览器。需要在配置中提供 search_api_key 或环境变量 BRAVE_API_KEY。",
 		Parameters: map[string]interface{}{
@@ -151,16 +151,9 @@ var globalSkillWeb *SkillWeb
 
 func init() {
 	globalSkillWeb = &SkillWeb{}
-	tools.RegisterToolProviderWithMetadata(
-		providerName,
-		tools.ToolProviderMetadata{
-			Name:        providerName,
-			Version:     "0.1.0",
-			Description: "Web - HTTP 抓取与搜索（Jina Reader + Brave Search），不依赖浏览器自动化",
-			Author:      "OctoSucker",
-			Tags:        []string{"web", "fetch", "search"},
-		},
-		RegisterWebSkill,
-		globalSkillWeb,
-	)
+	tools.RegisterToolProvider(&tools.ToolProviderInfo{
+		Name:        providerName,
+		Description: "Web - HTTP 抓取与搜索（Jina Reader + Brave Search），不依赖浏览器自动化",
+		Provider:    globalSkillWeb,
+	})
 }
